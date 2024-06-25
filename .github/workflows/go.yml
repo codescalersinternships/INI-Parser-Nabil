@@ -31,26 +31,10 @@ jobs:
       run: |
         go version
         gofmt -l .
-      continue-on-error: true
-
-    - name: Check for unformatted code
-      if: failure()
-      run: |
-        echo "The following files are not formatted correctly:"
-        gofmt -l .
-        exit 1
 
     - name: Run golint
       run: |
         golint ./...
-      continue-on-error: true
-
-    - name: Check for linting issues
-      if: failure()
-      run: |
-        echo "Linting issues found:"
-        golint ./...
-        exit 1
 
     - name: Run tests
       run: |

@@ -1,7 +1,7 @@
 # This workflow will build a golang project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
 
-name: ini-parser
+name: Go
 
 on:
   push:
@@ -14,32 +14,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.19'
-
-    - name: Install golint
-      run: |
-        go install golang.org/x/lint/golint@latest
-        export PATH=$PATH:$(go env GOPATH)/bin
-
-    - name: Run gofmt to check code format
-      run: |
-        go version
-        gofmt -l .
-
-    - name: Run golint
-      run: |
-        golint ./...
-
-    - name: Run tests
-      run: |
-        go test ./...
-
-    - name: Build the project
-      run: |
-        go build -v ./...
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22.x'
+      - name: Build
+        run: go build ./...
+      - name: Test with the Go CLI
+        run: go test ./...
+      - name: Format
+        run: go fmt ./...

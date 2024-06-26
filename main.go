@@ -1,0 +1,5 @@
+package iniparser
+
+func main() {
+
+}

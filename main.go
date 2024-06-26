@@ -1,4 +1,4 @@
-package iniparser
+package main
 
 func main() {
 

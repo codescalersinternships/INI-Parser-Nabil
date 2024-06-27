@@ -3,7 +3,6 @@ package iniparser
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -22,7 +21,7 @@ func NewIniParser() *IniParser {
 	}
 }
 
-func (iniparser *IniParser) createIni(scanner *bufio.Scanner) {
+func (iniparser *IniParser) createIni(scanner *bufio.Scanner) error {
 	var currSection string
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -30,41 +29,47 @@ func (iniparser *IniParser) createIni(scanner *bufio.Scanner) {
 			continue
 		}
 		if line[0] == '[' {
-			currSection = line[1 : len(line)-1]
+			possibleCurSec := line[1 : len(line)-1]
+			possibleCurSec = strings.TrimSpace(possibleCurSec)
+			if len(possibleCurSec) == 0 {
+				return fmt.Errorf("sections name can't be empty")
+			}
+			currSection = possibleCurSec
 			iniparser.data[currSection] = make(map[string]string)
 			continue
 		}
-		temp := strings.SplitN(line, "=", 2)
-		key, val := temp[0], temp[1]
+		keyVal := strings.SplitN(line, "=", 2)
+		key, val := keyVal[0], keyVal[1]
 		key = strings.TrimSpace(key)
 		val = strings.TrimSpace(val)
 		if len(key) == 0 || len(val) == 0 {
-			log.Fatal("key val aren't valid")
+			return fmt.Errorf("key val aren't valid")
 		}
 		curval, isKeyFound := iniparser.data[currSection][key]
 		if isKeyFound {
-			log.Fatal("key is dublicated already has value = ", curval)
+			return fmt.Errorf("key is dublicated already has value = %s", curval)
 		}
 		iniparser.data[currSection][key] = val
 	}
+	return nil
 }
 
-func (iniparser *IniParser) LoadFromFile(filePath string) {
+func (iniparser *IniParser) LoadFromFile(filePath string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
-		log.Fatal("Incorrect file path or file does not exist ", err)
+		return fmt.Errorf("incorrect file path or file does not exist %e", err)
 	}
 	defer file.Close()
 	if path.Ext(filePath) != ".ini" {
-		log.Fatal("unsupported file format ")
+		return fmt.Errorf("unsupported file format ")
 	}
 	in := bufio.NewScanner(file)
-	iniparser.createIni(in)
+	return iniparser.createIni(in)
 }
 
-func (iniparser *IniParser) LoadFromString(fileString string) {
+func (iniparser *IniParser) LoadFromString(fileString string) error {
 	in := bufio.NewScanner(strings.NewReader(fileString))
-	iniparser.createIni(in)
+	return iniparser.createIni(in)
 }
 func (iniparser *IniParser) GetSectionNames() []string {
 	var sections []string
@@ -77,25 +82,26 @@ func (iniparser *IniParser) GetSections() map[string]section {
 	return iniparser.data
 }
 
-func (iniparser *IniParser) Get(sectionName string, key string) string {
+func (iniparser *IniParser) Get(sectionName string, key string) (string, error) {
 	if len(sectionName) == 0 {
-		log.Fatal("section name is invalid")
+		return "", fmt.Errorf("section name is invalid")
 	}
 	val, found := iniparser.data[sectionName][key]
 	if !found {
-		log.Fatal("section name and key aren't found")
+		return "", fmt.Errorf("section name and key aren't found")
 	}
-	return val
+	return val, nil
 }
-func (iniparser *IniParser) Set(sectionName string, key string, val string) {
+func (iniparser *IniParser) Set(sectionName string, key string, val string) error {
 	if len(sectionName) == 0 {
-		log.Fatal("section name is invalid")
+		return fmt.Errorf("section name is invalid")
 	}
 	curval, found := iniparser.data[sectionName][key]
 	if !found {
-		log.Fatal("section name and key aren't found", curval)
+		return fmt.Errorf("section name and key aren't found %s", curval)
 	}
 	iniparser.data[sectionName][key] = val
+	return nil
 }
 
 func (iniparser *IniParser) ToString() string {

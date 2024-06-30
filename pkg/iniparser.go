@@ -104,7 +104,7 @@ func (iniparser *IniParser) Set(sectionName string, key string, val string) erro
 	return nil
 }
 
-func (iniparser *IniParser) ToString() string {
+func (iniparser *IniParser) String() string {
 	var str string
 	for sectionName, section := range iniparser.data {
 		str += fmt.Sprintf("[%v]\n", sectionName)
@@ -121,5 +121,5 @@ func (iniparser *IniParser) SaveToFile(filePath string) error {
 		return fmt.Errorf("unsupported file format: %s", fileExt)
 	}
 
-	return os.WriteFile(filePath, []byte(iniparser.ToString()), 0644)
+	return os.WriteFile(filePath, []byte(iniparser.String()), 0644)
 }

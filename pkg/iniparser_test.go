@@ -21,13 +21,13 @@ func TestLoadFromString(t *testing.T) {
 	tests := []struct {
 		name     string
 		data     string
-		expected map[string]map[string]string
+		expected map[string]section
 		err      bool
 	}{
 		{
 			name: "test on valid INI",
 			data: validIni,
-			expected: map[string]map[string]string{
+			expected: map[string]section{
 				"Simple Values": {
 					"you can also use": "to delimit keys from values",
 					"key":              "value",
@@ -41,21 +41,21 @@ func TestLoadFromString(t *testing.T) {
 			name: "empty section name",
 			data: `[   ]
 key=value`,
-			expected: map[string]map[string]string{},
+			expected: map[string]section{},
 			err:      true,
 		},
 		{
 			name: "empty key name",
 			data: `[section]
  =value`,
-			expected: map[string]map[string]string{},
+			expected: map[string]section{},
 			err:      true,
 		},
 		{
 			name: "empty val name",
 			data: `[section]
  key=  `,
-			expected: map[string]map[string]string{},
+			expected: map[string]section{},
 			err:      true,
 		},
 		{
@@ -63,7 +63,7 @@ key=value`,
 			data: `[section]
  key= val1
  key=val2`,
-			expected: map[string]map[string]string{},
+			expected: map[string]section{},
 			err:      true,
 		},
 	}
@@ -71,15 +71,14 @@ key=value`,
 		p := NewIniParser()
 		t.Run(test.name, func(t *testing.T) {
 			err := p.LoadFromString(test.data)
-			if (err != nil) && test.err {
+			if err != nil && test.err {
 				return
-
-			} else if err == nil && test.err {
-				t.Errorf("LoadFromString : error not expected , wanted error : %v , got : %v", test.err, err)
-
-			} else if reflect.DeepEqual(p.GetSections(), test.expected) {
-				t.Errorf("LoadFromString : expected %v , got %v", test.expected, p.GetSections())
 			}
+			if err == nil && test.err {
+				t.Errorf("LoadFromString : error not expected , wanted error : %v , got : %v", test.err, err)
+				return
+			}
+			assertTwoMaps(t, p.GetSections(), test.expected)
 		})
 	}
 
@@ -89,13 +88,13 @@ func TestLoadFromFile(t *testing.T) {
 	tests := []struct {
 		name     string
 		filePath string
-		expected map[string]map[string]string
+		expected map[string]section
 		err      bool
 	}{
 		{
 			name:     "test on valid INI",
 			filePath: "./testdata/validini.ini",
-			expected: map[string]map[string]string{
+			expected: map[string]section{
 				"Simple Values": {
 					"you can also use": "to delimit keys from values",
 					"key":              "value",
@@ -108,25 +107,25 @@ func TestLoadFromFile(t *testing.T) {
 		{
 			name:     "empty section name",
 			filePath: "./testdata/emptySec.ini",
-			expected: map[string]map[string]string{},
+			expected: map[string]section{},
 			err:      true,
 		},
 		{
 			name:     "empty key name",
 			filePath: "./testdata/emptyKey.ini",
-			expected: map[string]map[string]string{},
+			expected: map[string]section{},
 			err:      true,
 		},
 		{
 			name:     "empty val name",
 			filePath: "./testdata/emptyVal.ini",
-			expected: map[string]map[string]string{},
+			expected: map[string]section{},
 			err:      true,
 		},
 		{
 			name:     "duplicate key",
 			filePath: "./testdata/duplicateKey.ini",
-			expected: map[string]map[string]string{},
+			expected: map[string]section{},
 			err:      true,
 		},
 	}
@@ -140,9 +139,8 @@ func TestLoadFromFile(t *testing.T) {
 			} else if err == nil && test.err {
 				t.Errorf("LoadFromString : error not expected , wanted error : %v , got : %v", test.err, err)
 
-			} else if reflect.DeepEqual(p.GetSections(), test.expected) {
-				t.Errorf("LoadFromString : expected %v , got %v", test.expected, p.GetSections())
 			}
+			assertTwoMaps(t, p.GetSections(), test.expected)
 		})
 	}
 }
@@ -183,12 +181,12 @@ func TestGetSections(t *testing.T) {
 	tests := []struct {
 		name     string
 		data     string
-		expected map[string]map[string]string
+		expected map[string]section
 	}{
 		{
 			name: "non-empty sections",
 			data: validIni,
-			expected: map[string]map[string]string{
+			expected: map[string]section{
 				"Simple Values": {
 					"you can also use": "to delimit keys from values",
 					"key":              "value",
@@ -200,16 +198,15 @@ func TestGetSections(t *testing.T) {
 		{
 			name:     "empty sections",
 			data:     "",
-			expected: map[string]map[string]string{},
+			expected: map[string]section{},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			p := NewIniParser()
+			p.LoadFromString(test.data)
 			gotSections := p.GetSections()
-			if reflect.DeepEqual(gotSections, test.expected) {
-				t.Errorf("GetSectionNames : expected: %v , got : %v", test.expected, gotSections)
-			}
+			assertTwoMaps(t, gotSections, test.expected)
 		},
 		)
 	}
@@ -257,15 +254,14 @@ func TestGet(t *testing.T) {
 			gotValue, err := p.Get(test.sectionName, test.keyName)
 			if err != nil && !test.error {
 				t.Errorf("GetSectionNames : expected: %v , got : %v", test.error, err)
-			} else if !reflect.DeepEqual(gotValue, test.expected) {
-				t.Errorf("GetSectionNames : expected: %v , got : %v", test.expected, gotValue)
 			}
+			assertStrings(t, gotValue, test.expected)
 		},
 		)
 	}
 }
 
-func TestSEet(t *testing.T) {
+func TestSet(t *testing.T) {
 
 	tests := []struct {
 		name        string
@@ -306,9 +302,9 @@ func TestSEet(t *testing.T) {
 			err = p.Set(test.sectionName, test.keyName, test.value)
 			if err != nil && !test.error {
 				t.Errorf("GetSectionNames : expected: %v , got : %v", test.error, err)
-			} else if checkValue, _ := p.Get(test.sectionName, test.keyName); !reflect.DeepEqual(checkValue, test.value) {
-				t.Errorf("GetSectionNames : expected: %v , got : %v", test.value, checkValue)
 			}
+			checkValue, _ := p.Get(test.sectionName, test.keyName)
+			assertStrings(t, checkValue, test.value)
 		},
 		)
 	}
@@ -333,9 +329,7 @@ key=value
 paces in keys=allowed
 [You can use comments]
 `
-		if !reflect.DeepEqual(got, validIniExpected) {
-			t.Errorf("	String : expected %v , got %v", validIniExpected, got)
-		}
+		assertStrings(t, got, validIniExpected)
 	})
 }
 
@@ -365,4 +359,18 @@ paces in keys=allowed
 			t.Errorf("SaveToFile : expected %v , got %v", validIniExpected, string(got))
 		}
 	})
+}
+
+func assertTwoMaps(t testing.TB, got, want map[string]section) {
+	t.Helper()
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got error:\n\t%v \nwant:\n\t%v", got, want)
+	}
+}
+
+func assertStrings(t testing.TB, got, want string) {
+	t.Helper()
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got:\n\t%q \nwant:\n\t%q", got, want)
+	}
 }

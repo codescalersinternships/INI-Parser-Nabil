@@ -204,7 +204,10 @@ func TestGetSections(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			p := NewIniParser()
-			p.LoadFromString(test.data)
+			err := p.LoadFromString(validIni)
+			if err != nil {
+				t.Errorf("GetSectionNames : can't load from file got : %v", err)
+			}
 			gotSections := p.GetSections()
 			assertTwoMaps(t, gotSections, test.expected)
 		},

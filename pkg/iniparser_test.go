@@ -250,7 +250,10 @@ func TestGet(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			p := NewIniParser()
-			p.LoadFromString(validIni)
+			err := p.LoadFromString(validIni)
+			if err != nil {
+				t.Errorf("GetSectionNames : can't load from file got : %v", err)
+			}
 			gotValue, err := p.Get(test.sectionName, test.keyName)
 			if err != nil && !test.error {
 				t.Errorf("GetSectionNames : expected: %v , got : %v", test.error, err)
@@ -296,8 +299,11 @@ func TestSEet(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			p := NewIniParser()
-			p.LoadFromString(validIni)
-			err := p.Set(test.sectionName, test.keyName, test.value)
+			err := p.LoadFromString(validIni)
+			if err != nil {
+				t.Errorf("String : error not expected , got : %v", err)
+			}
+			err = p.Set(test.sectionName, test.keyName, test.value)
 			if err != nil && !test.error {
 				t.Errorf("GetSectionNames : expected: %v , got : %v", test.error, err)
 			} else if checkValue, _ := p.Get(test.sectionName, test.keyName); !reflect.DeepEqual(checkValue, test.value) {

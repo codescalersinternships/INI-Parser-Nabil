@@ -204,7 +204,7 @@ func TestGetSections(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			p := NewIniParser()
-			err := p.LoadFromString(validIni)
+			err := p.LoadFromString(test.data)
 			if err != nil {
 				t.Errorf("GetSectionNames : can't load from file got : %v", err)
 			}
@@ -344,11 +344,11 @@ func TestSaveToFile(t *testing.T) {
 		if err != nil {
 			t.Errorf("SaveToFile : error not expected , got : %v", err)
 		}
-		err = p.SaveToFile("./testdata/simple_example.ini")
+		err = p.SaveToFile("./testdata/output.ini")
 		if err != nil {
 			t.Errorf("SaveToFile : error not expected , got : %v", err)
 		}
-		got, err := os.ReadFile("./testdata/simple_example.ini")
+		got, err := os.ReadFile("./testdata/output.ini")
 		if err != nil {
 			t.Errorf("SaveToFile : error not expected , got : %v", err)
 		}

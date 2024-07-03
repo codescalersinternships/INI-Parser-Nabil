@@ -1,4 +1,4 @@
-# Unix-Based Commands Implemented in Go
+# INI Parser Implemented in Go
 This module provides the ConfigParser class which implements a basic configuration language which provides a structure similar to what’s found in Microsoft Windows INI files. You can use this to write go programs which can be manipulated by end users easily.
 
 # Features

@@ -166,7 +166,10 @@ func TestGetSectionNames(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			p := NewIniParser()
-			p.LoadFromString(test.data)
+			err := p.LoadFromString(test.data)
+			if err != nil {
+				t.Errorf("GetSectionNames : can't load from file got : %v", err)
+			}
 			gotSections := p.GetSectionNames()
 			assertArrayStrings(t, gotSections, test.expected)
 		},

@@ -1,8 +1,8 @@
 package iniparser
 
 import (
-	"os"
 	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -166,10 +166,9 @@ func TestGetSectionNames(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			p := NewIniParser()
+			p.LoadFromString(test.data)
 			gotSections := p.GetSectionNames()
-			if reflect.DeepEqual(gotSections, test.expected) {
-				t.Errorf("GetSectionNames : expected: %v , got : %v", test.expected, gotSections)
-			}
+			assertArrayStrings(t, gotSections, test.expected)
 		},
 		)
 	}
@@ -348,32 +347,98 @@ func TestSaveToFile(t *testing.T) {
 		if err != nil {
 			t.Errorf("SaveToFile : error not expected , got : %v", err)
 		}
-		got, err := os.ReadFile("./testdata/output.ini")
+		p = NewIniParser()
+		err = p.LoadFromFile("./testdata/output.ini")
 		if err != nil {
 			t.Errorf("SaveToFile : error not expected , got : %v", err)
 		}
-		validIniExpected := `[Simple Values]
-you can also use=to delimit keys from values
-key=value
-paces in keys=allowed
-[You can use comments]
-`
-		if reflect.DeepEqual(got, validIniExpected) {
-			t.Errorf("SaveToFile : expected %v , got %v", validIniExpected, string(got))
+		got := p.GetSections()
+		validIniExpected := map[string]section{
+			"Simple Values": {
+				"you can also use": "to delimit keys from values",
+				"key":              "value",
+				"paces in keys":    "allowed",
+			},
+			"You can use comments": {},
 		}
+		assertTwoMaps(t, got, validIniExpected)
 	})
 }
 
-func assertTwoMaps(t testing.TB, got, want map[string]section) {
+func assertKeyValueEqual(firstMp, secondMp map[string]string) bool {
+	if len(firstMp) != len(secondMp) {
+		return false
+	}
+	keysOfFirst := []string{}
+
+	for k := range firstMp {
+		keysOfFirst = append(keysOfFirst, k)
+	}
+
+	keysOfSec := []string{}
+
+	for k := range secondMp {
+		keysOfSec = append(keysOfSec, k)
+	}
+	sort.Strings(keysOfFirst)
+	sort.Strings(keysOfSec)
+
+	for idx := 0; idx < len(keysOfFirst); idx++ {
+		if keysOfFirst[idx] != keysOfSec[idx] {
+			return false
+		}
+		if firstMp[keysOfFirst[idx]] != secondMp[keysOfFirst[idx]] {
+			return false
+		}
+	}
+	return true
+}
+func assertTwoMaps(t *testing.T, got, want map[string]section) {
 	t.Helper()
-	if !reflect.DeepEqual(got, want) {
+	isEqual := true
+	if len(got) != len(want) {
+		t.Errorf("got error:\n\t%v \nwant:\n\t%v", got, want)
+		return
+	}
+	keysOfFirst := []string{}
+
+	for k := range got {
+		keysOfFirst = append(keysOfFirst, k)
+	}
+
+	keysOfSec := []string{}
+
+	for k := range want {
+		keysOfSec = append(keysOfSec, k)
+	}
+	sort.Strings(keysOfFirst)
+	sort.Strings(keysOfSec)
+	for idx := 0; idx < len(keysOfFirst); idx++ {
+		if keysOfFirst[idx] != keysOfSec[idx] {
+			isEqual = false
+		}
+		if !assertKeyValueEqual(got[keysOfFirst[idx]], want[keysOfFirst[idx]]) {
+			isEqual = false
+		}
+	}
+
+	if !isEqual {
 		t.Errorf("got error:\n\t%v \nwant:\n\t%v", got, want)
 	}
 }
 
-func assertStrings(t testing.TB, got, want string) {
+func assertStrings(t *testing.T, got, want string) {
 	t.Helper()
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got:\n\t%q \nwant:\n\t%q", got, want)
+	}
+}
+
+func assertArrayStrings(t *testing.T, got []string, want []string) {
+	t.Helper()
+	sort.Strings(got)
+	sort.Strings(want)
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("GetSectionNames : expected: %v , got : %v", want, got)
 	}
 }

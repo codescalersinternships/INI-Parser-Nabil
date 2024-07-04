@@ -71,6 +71,7 @@ func (iniparser *IniParser) LoadFromFile(filePath string) error {
 	if path.Ext(filePath) != ".ini" {
 		return fmt.Errorf("unsupported file format ")
 	}
+	iniparser.data = make(map[string]section)
 	in := bufio.NewScanner(file)
 	return iniparser.createIni(in)
 }
@@ -79,13 +80,14 @@ func (iniparser *IniParser) LoadFromFile(filePath string) error {
 // On success returns nil
 // It try to parse my string
 func (iniparser *IniParser) LoadFromString(fileString string) error {
+	iniparser.data = make(map[string]section)
 	in := bufio.NewScanner(strings.NewReader(fileString))
 	return iniparser.createIni(in)
 }
 
 // GetSectionNames Return a list of section names
 func (iniparser *IniParser) GetSectionNames() []string {
-	var sections []string
+	sections := []string{}
 	for section := range iniparser.data {
 		sections = append(sections, section)
 	}

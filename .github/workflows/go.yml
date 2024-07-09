@@ -28,19 +28,5 @@ jobs:
       uses: Jerome1337/gofmt-action@v1.0.5
 
 
-    #- name: Install golint
-     # run: |
-      #  go install golang.org/x/lint/golint@latest
-       # export PATH=$PATH:$(go env GOPATH)/bin
-    #- name: Build
-     # run: go build -v ./...
-
-    #- name: Test
-     # run: go test -v ./...
-
-    #- name: Format
-    #  run: |
-    #    go version
-    #    go fmt ./...
-    #- name: Linter
-    #  run: golint ./...
+    - name: Test
+      run: go test -v ./...

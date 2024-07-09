@@ -1,4 +1,4 @@
-// packafe iniparser  implements a basic configuration language
+// package iniparser implements a basic configuration language
 // which provides a structure similar to what’s found in Microsoft Windows INI files.
 // You can use this to write go programs which can be manpulate ini files by end users easily.
 package iniparser

@@ -30,7 +30,7 @@ func (iniparser *IniParser) loadINIHelper(scanner *bufio.Scanner) error {
 	var currSection string
 	for scanner.Scan() {
 		line := scanner.Text()
-		line = strings.TrimSpace(line[0])
+		line = strings.TrimSpace(line)
 		if len(line) == 0 || line[0] == '#' || line[0] == ';' {
 			continue
 		}

@@ -26,14 +26,18 @@ func NewIniParser() *IniParser {
 	}
 }
 
-func (iniparser *IniParser) createIni(scanner *bufio.Scanner) error {
+func (iniparser *IniParser) loadINIHelper(scanner *bufio.Scanner) error {
 	var currSection string
 	for scanner.Scan() {
 		line := scanner.Text()
+		line = strings.TrimSpace(line[0])
 		if len(line) == 0 || line[0] == '#' || line[0] == ';' {
 			continue
 		}
 		if line[0] == '[' {
+			if line[len(line)-1] != ']' {
+				return fmt.Errorf("section doesn't contain its ] delimiter")
+			}
 			possibleCurSec := line[1 : len(line)-1]
 			possibleCurSec = strings.TrimSpace(possibleCurSec)
 			if len(possibleCurSec) == 0 {
@@ -42,6 +46,9 @@ func (iniparser *IniParser) createIni(scanner *bufio.Scanner) error {
 			currSection = possibleCurSec
 			iniparser.data[currSection] = make(map[string]string)
 			continue
+		}
+		if strings.ContainsAny(line,"=") {
+			return fmt.Errorf("Line is neither a section nor a key value pair")
 		}
 		keyVal := strings.SplitN(line, "=", 2)
 		key, val := keyVal[0], keyVal[1]

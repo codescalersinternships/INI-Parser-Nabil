@@ -80,7 +80,7 @@ func (iniparser *IniParser) LoadFromFile(filePath string) error {
 	}
 	iniparser.data = make(map[string]section)
 	in := bufio.NewScanner(file)
-	return iniparser.createIni(in)
+	return iniparser.loadINIHelper(in)
 }
 
 // LoadFromString Read and parse a string
@@ -89,7 +89,7 @@ func (iniparser *IniParser) LoadFromFile(filePath string) error {
 func (iniparser *IniParser) LoadFromString(fileString string) error {
 	iniparser.data = make(map[string]section)
 	in := bufio.NewScanner(strings.NewReader(fileString))
-	return iniparser.createIni(in)
+	return iniparser.loadINIHelper(in)
 }
 
 // GetSectionNames Return a list of section names

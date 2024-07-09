@@ -66,6 +66,21 @@ key=value`,
 			expected: map[string]section{},
 			err:      true,
 		},
+		{
+			name: "unvalid section",
+			data: `[section
+ key= val1
+ key2=val2`,
+			expected: map[string]section{},
+			err:      true,
+		},
+		{
+			name: "key without value",
+			data: `[section
+ key`,
+			expected: map[string]section{},
+			err:      true,
+		},
 	}
 	for _, test := range tests {
 		p := NewIniParser()

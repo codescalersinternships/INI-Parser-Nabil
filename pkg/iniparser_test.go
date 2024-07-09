@@ -76,7 +76,7 @@ key=value`,
 		},
 		{
 			name: "key without value",
-			data: `[section
+			data: `[section]
  key`,
 			expected: map[string]section{},
 			err:      true,
@@ -140,6 +140,18 @@ func TestLoadFromFile(t *testing.T) {
 		{
 			name:     "duplicate key",
 			filePath: "./testdata/duplicateKey.ini",
+			expected: map[string]section{},
+			err:      true,
+		},
+		{
+			name:     "unvalid section",
+			filePath: "./testdata/unvalidSection.ini",
+			expected: map[string]section{},
+			err:      true,
+		},
+		{
+			name:     "key without value",
+			filePath: "./testdata/unvalidSection.ini",
 			expected: map[string]section{},
 			err:      true,
 		},

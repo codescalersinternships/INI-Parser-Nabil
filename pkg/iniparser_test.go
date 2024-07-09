@@ -90,7 +90,7 @@ key=value`,
 				return
 			}
 			if err == nil && test.err {
-				t.Errorf("LoadFromString : error not expected , wanted error : %v , got : %v", test.err, err)
+				t.Errorf("LoadFromString : error not expected , wanted : %v , got : %v", test.err, err)
 				return
 			}
 			assertTwoMaps(t, p.GetSections(), test.expected)
@@ -152,7 +152,7 @@ func TestLoadFromFile(t *testing.T) {
 				return
 
 			} else if err == nil && test.err {
-				t.Errorf("LoadFromString : error not expected , wanted error : %v , got : %v", test.err, err)
+				t.Errorf("LoadFromString : error not expected , wanted : %v , got : %v", test.err, err)
 
 			}
 			assertTwoMaps(t, p.GetSections(), test.expected)

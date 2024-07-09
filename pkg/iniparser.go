@@ -47,8 +47,8 @@ func (iniparser *IniParser) loadINIHelper(scanner *bufio.Scanner) error {
 			iniparser.data[currSection] = make(map[string]string)
 			continue
 		}
-		if strings.ContainsAny(line,"=") {
-			return fmt.Errorf("Line is neither a section nor a key value pair")
+		if !strings.ContainsAny(line, "=") {
+			return fmt.Errorf("line is neither a section nor a key value pair")
 		}
 		keyVal := strings.SplitN(line, "=", 2)
 		key, val := keyVal[0], keyVal[1]

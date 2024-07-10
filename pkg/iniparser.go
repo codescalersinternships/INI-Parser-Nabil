@@ -87,7 +87,6 @@ func (iniparser *IniParser) LoadFromFile(filePath string) error {
 // On success returns nil
 // It try to parse my string
 func (iniparser *IniParser) LoadFromString(fileString string) error {
-	iniparser.data = make(map[string]section)
 	in := bufio.NewScanner(strings.NewReader(fileString))
 	return iniparser.loadINIHelper(in)
 }

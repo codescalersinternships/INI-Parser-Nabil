@@ -20,8 +20,8 @@ type IniParser struct {
 }
 
 // NewIniParser implementing new parser.
-func NewIniParser() *IniParser {
-	return &IniParser{
+func NewIniParser() IniParser {
+	return IniParser{
 		data: make(map[string]section),
 	}
 }
@@ -38,12 +38,11 @@ func (iniparser *IniParser) loadINIHelper(scanner *bufio.Scanner) error {
 			if line[len(line)-1] != ']' {
 				return fmt.Errorf("section doesn't contain its ] delimiter")
 			}
-			possibleCurSec := line[1 : len(line)-1]
-			possibleCurSec = strings.TrimSpace(possibleCurSec)
-			if len(possibleCurSec) == 0 {
+			currSection = line[1 : len(line)-1]
+			currSection = strings.TrimSpace(currSection)
+			if len(currSection) == 0 {
 				return fmt.Errorf("sections name can't be empty")
 			}
-			currSection = possibleCurSec
 			iniparser.data[currSection] = make(map[string]string)
 			continue
 		}
@@ -57,10 +56,6 @@ func (iniparser *IniParser) loadINIHelper(scanner *bufio.Scanner) error {
 		if len(key) == 0 || len(val) == 0 {
 			return fmt.Errorf("key val aren't valid")
 		}
-		curval, isKeyFound := iniparser.data[currSection][key]
-		if isKeyFound {
-			return fmt.Errorf("key is dublicated already has value = %s", curval)
-		}
 		iniparser.data[currSection][key] = val
 	}
 	return nil
@@ -70,15 +65,14 @@ func (iniparser *IniParser) loadINIHelper(scanner *bufio.Scanner) error {
 // Files that cannot be opened return error, On success returns nil
 // It try to parse my file
 func (iniparser *IniParser) LoadFromFile(filePath string) error {
+	if path.Ext(filePath) != ".ini" {
+		return fmt.Errorf("unsupported file format ")
+	}
 	file, err := os.Open(filePath)
 	if err != nil {
 		return fmt.Errorf("incorrect file path or file does not exist %e", err)
 	}
 	defer file.Close()
-	if path.Ext(filePath) != ".ini" {
-		return fmt.Errorf("unsupported file format ")
-	}
-	iniparser.data = make(map[string]section)
 	in := bufio.NewScanner(file)
 	return iniparser.loadINIHelper(in)
 }
@@ -100,9 +94,21 @@ func (iniparser *IniParser) GetSectionNames() []string {
 	return sections
 }
 
+func copyMap(mapToCopy map[string]string) map[string]string {
+	copiedMap := make(map[string]string)
+	for k, v := range mapToCopy {
+		copiedMap[k] = v
+	}
+	return copiedMap
+}
+
 // GetSections returns a map of sections and their key-value pairs
-func (iniparser *IniParser) GetSections() map[string]section {
-	return iniparser.data
+func (iniparser *IniParser) GetSections() map[string]map[string]string {
+	copiedMap := make(map[string]map[string]string)
+	for k, v := range iniparser.data {
+		copiedMap[k] = copyMap(v)
+	}
+	return copiedMap
 }
 
 // Get returns the value of the key in the sectionName, if the section or key is not found it returns an error

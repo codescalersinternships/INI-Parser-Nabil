@@ -21,13 +21,13 @@ func TestLoadFromString(t *testing.T) {
 	tests := []struct {
 		name     string
 		data     string
-		expected map[string]section
+		expected map[string]map[string]string
 		err      bool
 	}{
 		{
 			name: "test on valid INI",
 			data: validIni,
-			expected: map[string]section{
+			expected: map[string]map[string]string{
 				"Simple Values": {
 					"you can also use": "to delimit keys from values",
 					"key":              "value",
@@ -41,29 +41,21 @@ func TestLoadFromString(t *testing.T) {
 			name: "empty section name",
 			data: `[   ]
 key=value`,
-			expected: map[string]section{},
+			expected: map[string]map[string]string{},
 			err:      true,
 		},
 		{
 			name: "empty key name",
 			data: `[section]
  =value`,
-			expected: map[string]section{},
+			expected: map[string]map[string]string{},
 			err:      true,
 		},
 		{
 			name: "empty val name",
 			data: `[section]
  key=  `,
-			expected: map[string]section{},
-			err:      true,
-		},
-		{
-			name: "duplicate key",
-			data: `[section]
- key= val1
- key=val2`,
-			expected: map[string]section{},
+			expected: map[string]map[string]string{},
 			err:      true,
 		},
 		{
@@ -71,14 +63,14 @@ key=value`,
 			data: `[section
  key= val1
  key2=val2`,
-			expected: map[string]section{},
+			expected: map[string]map[string]string{},
 			err:      true,
 		},
 		{
 			name: "key without value",
 			data: `[section]
  key`,
-			expected: map[string]section{},
+			expected: map[string]map[string]string{},
 			err:      true,
 		},
 	}
@@ -103,13 +95,13 @@ func TestLoadFromFile(t *testing.T) {
 	tests := []struct {
 		name     string
 		filePath string
-		expected map[string]section
+		expected map[string]map[string]string
 		err      bool
 	}{
 		{
 			name:     "test on valid INI",
 			filePath: "./testdata/validini.ini",
-			expected: map[string]section{
+			expected: map[string]map[string]string{
 				"Simple Values": {
 					"you can also use": "to delimit keys from values",
 					"key":              "value",
@@ -122,37 +114,31 @@ func TestLoadFromFile(t *testing.T) {
 		{
 			name:     "empty section name",
 			filePath: "./testdata/emptySec.ini",
-			expected: map[string]section{},
+			expected: map[string]map[string]string{},
 			err:      true,
 		},
 		{
 			name:     "empty key name",
 			filePath: "./testdata/emptyKey.ini",
-			expected: map[string]section{},
+			expected: map[string]map[string]string{},
 			err:      true,
 		},
 		{
 			name:     "empty val name",
 			filePath: "./testdata/emptyVal.ini",
-			expected: map[string]section{},
-			err:      true,
-		},
-		{
-			name:     "duplicate key",
-			filePath: "./testdata/duplicateKey.ini",
-			expected: map[string]section{},
+			expected: map[string]map[string]string{},
 			err:      true,
 		},
 		{
 			name:     "unvalid section",
 			filePath: "./testdata/unvalidSection.ini",
-			expected: map[string]section{},
+			expected: map[string]map[string]string{},
 			err:      true,
 		},
 		{
 			name:     "key without value",
 			filePath: "./testdata/unvalidSection.ini",
-			expected: map[string]section{},
+			expected: map[string]map[string]string{},
 			err:      true,
 		},
 	}
@@ -210,12 +196,12 @@ func TestGetSections(t *testing.T) {
 	tests := []struct {
 		name     string
 		data     string
-		expected map[string]section
+		expected map[string]map[string]string
 	}{
 		{
 			name: "non-empty sections",
 			data: validIni,
-			expected: map[string]section{
+			expected: map[string]map[string]string{
 				"Simple Values": {
 					"you can also use": "to delimit keys from values",
 					"key":              "value",
@@ -227,7 +213,7 @@ func TestGetSections(t *testing.T) {
 		{
 			name:     "empty sections",
 			data:     "",
-			expected: map[string]section{},
+			expected: map[string]map[string]string{},
 		},
 	}
 	for _, test := range tests {
@@ -383,7 +369,7 @@ func TestSaveToFile(t *testing.T) {
 			t.Errorf("SaveToFile : error not expected , got : %v", err)
 		}
 		got := p.GetSections()
-		validIniExpected := map[string]section{
+		validIniExpected := map[string]map[string]string{
 			"Simple Values": {
 				"you can also use": "to delimit keys from values",
 				"key":              "value",
@@ -423,7 +409,7 @@ func assertKeyValueEqual(firstMp, secondMp map[string]string) bool {
 	}
 	return true
 }
-func assertTwoMaps(t *testing.T, got, want map[string]section) {
+func assertTwoMaps(t *testing.T, got, want map[string]map[string]string) {
 	t.Helper()
 	isEqual := true
 	if len(got) != len(want) {

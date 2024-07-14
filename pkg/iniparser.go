@@ -34,10 +34,7 @@ func (iniparser *IniParser) loadINIHelper(scanner *bufio.Scanner) error {
 		if len(line) == 0 || line[0] == '#' || line[0] == ';' {
 			continue
 		}
-		if line[0] == '[' {
-			if line[len(line)-1] != ']' {
-				return fmt.Errorf("section doesn't contain its ] delimiter")
-			}
+		if line[0] == '[' && line[len(line)-1] == ']' {
 			currSection = line[1 : len(line)-1]
 			currSection = strings.TrimSpace(currSection)
 			if len(currSection) == 0 {
@@ -45,6 +42,9 @@ func (iniparser *IniParser) loadINIHelper(scanner *bufio.Scanner) error {
 			}
 			iniparser.data[currSection] = make(map[string]string)
 			continue
+		}
+		if line[0] == '[' {
+			return fmt.Errorf("section doesn't contain its ] delimiter")
 		}
 		if !strings.ContainsAny(line, "=") {
 			return fmt.Errorf("line is neither a section nor a key value pair")
